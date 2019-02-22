@@ -1,0 +1,322 @@
+#############################################################################################
+
+AWS EC2 CLI – Cheat sheet
+
+# aws ec2 help
+Create instance EC2 Classic
+
+
+#aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t1.micro --key-name MyKeyPair --security-groups my-sg
+Create instance in VPC
+
+# aws ec2 run-instances --image-id ami-xxxxxxxx --count 1 --instance-type t2.micro --key-name MyKeyPair --security-group-ids sg-xxxxxxxx --subnet-id subnet-xxxxxxxx
+Start instance
+
+# aws ec2 start-instances --instance-ids <instance-id>
+Stop instance
+
+# aws ec2 stop-instances --instance-ids <instance-id>
+Reboot instance 
+
+# aws ec2 reboot-instances --instance-ids <instance-id>
+Terminate instance
+
+# aws ec2 terminate-instances --instance-ids <instance-id>
+View console output
+
+# aws ec2 get-console-output --instance-id <instance-id>
+Describe Instance
+
+# aws ec2 describe-instances --instance-ids <instance-id>
+
+
+Create an AMI
+
+# aws ec2 create-image \
+ --instance-id <instance-id> \
+ --name myAMI \
+ --description 'CloudVedas Test AMI'
+List images(AMIs)
+
+# aws ec2 describe-images --image-ids <ami-id>
+List  security groups
+
+# aws ec2 describe-security-groups
+Create security group
+
+# aws ec2 create-security-group --vpc-id vpc-1234abcd --group-name db-access --description "cloudvedas db access"
+Get details of security group
+
+# aws ec2 describe-security-groups --group-names <group-name>
+Delete Security group
+
+# aws ec2 delete-security-group --group-id sg-1234abcd
+List key pairs
+
+# aws ec2 describe-key-pairs
+Create keypair
+
+# aws ec2 create-key-pair --key-name <value>
+Import keypair
+
+# aws ec2 import-key-pair --key-name keyname_test --public-key-material file:///cldvds/sagu/id_rsa.pub
+Delete keypair
+
+# aws ec2 delete-key-pair --key-name <value>
+Check the networking attribute
+
+# aws ec2 describe-instance-attribute --instance-id <instance-id> --attribute sriovNetSupport
+Add tags to instance
+
+# aws ec2 create-tags --resources i-xxxxxxxx --tags Key=Name,Value=MyInstance
+Add EBS volume
+
+# aws ec2 --block-device-mappings "[{\"DeviceName\":\"/dev/sdf\",\"Ebs\":{\"VolumeSize\":20,\"DeleteOnTermination\":false}}]"
+
+#####################################################################################
+
+Volumes
+
+Describing volumes
+aws ec2 describe-volumes
+# aws ec2 describe-volumes
+
+Describing filtered volumes
+# aws ec2 describe-volumes --filters  Name=status,Values=creating | available | in-use | deleting | deleted | error
+
+Filters can be applied to the attachment status:
+# aws ec2 describe-volumes --filters  Name=attachment.status,Values=attaching | attached | detaching | detached
+aws ec2 describe-volumes --filters  Name=attachment.status,Values=attaching
+
+This is the generic form. Use --profile <your_profile_name> , if you have multiple AWS profiles or accounts.
+# aws ec2 describe-volumes --filters Name:'tag:Name',Values: ['some_values'] --profile <your_profile_name>
+
+Describing volumes using a different aws user profile
+# aws ec2 describe-volumes --filters  Name=status,Values=in-use  --profile <your_profile_name>
+
+Listing available volumes ids
+# aws ec2 describe-volumes --filters  Name=status,Values=available  --profile <your_profile_name>|grep VolumeId|awk '{print $2}' | tr '\n|,|"' ' '
+
+Deleting a volume
+# aws ec2 delete-volume --region <region> --volume-id <volume_id>
+
+Deleting unused volumes (think before you type)
+# for x in $(aws ec2 describe-volumes --filters  Name=status,Values=available  --profile <your_profile_name>|grep VolumeId|awk '{print $2}' | tr ',|"' ' '); do aws ec2 delete-volume --region <region> --volume-id $x --profile <your_profile_name>; done
+
+###################################################################################### 
+
+Creating a snapshot
+# aws ec2 create-snapshot --volume-id <vol-id> --profile <your_profile_name>
+# aws ec2 create-snapshot --volume-id <vol-id> --description "snapshot-$(date +'%Y-%m-%d_%H-%M-%S')" --profile <your_profile_name>
+
+
+######################################################################################
+
+Creating an image (AMI)
+# aws ec2 create-image --instance-id <instance_id> --name "image-$(date +'%Y-%m-%d_%H-%M-%S')" --description "image-$(date +'%Y-%m-%d_%H-%M-%S')" --profile <your_profile_name>
+
+Creating AMI without reboot
+# aws ec2 create-image --instance-id <instance_id> --name "image-$(date +'%Y-%m-%d_%H-%M-%S')" --description "image-$(date +'%Y-%m-%d_%H-%M-%S')" --no-reboot --profile <your_profile_name>
+
+########################################################################################
+
+AWS s3 
+
+AWS S3 CLI – Cheat sheet
+
+
+Once you have downloaded and configured AWS CLI on your machine you have to exceute “sync” command as shown below.
+
+# aws s3 sync s3://mybucket/dir  /local/folder
+You can also do the same with “cp” command. It will need –recursive option to recursively copy the contents of subdirectories also.
+
+# aws s3 cp s3://myBucket/dir /local/folder --recursive
+
+# aws s3 help
+or
+
+# aws s3api help
+Create bucket
+
+# aws s3 mb s3://bucket-name 
+
+Removing bucket
+
+# aws s3 rb s3://bucket-name
+To remove a non-empty bucket (Extremely careful while running this)
+
+# aws s3 rb s3://bucket-name --force
+Copy object
+
+# aws s3 cp mypic.png s3://mybucket/
+Copy buckets
+
+# aws s3 cp myfolder s3://mybucket/myfolder --recursive
+(Note: –recursive will copy recursively everything including the subfolders)
+
+Sync buckets
+
+# aws s3 sync <source> <target> [--options]
+
+More examples of using sync and cp commands on this post.
+
+List buckets
+
+# aws s3 ls
+List specific bucket
+
+# aws s3 ls s3://mybucket
+Bucket location
+
+# aws s3api get-bucket-location --bucket <bucket-name>
+Logging status
+
+# aws s3api get-bucket-logging --bucket <bucket-name>
+ACL (Access Control List)
+
+The following example copies an object into a bucket. It grants read permissions on the object to everyone and full permissions (read, readacl, and writeacl) to the account associated with user@example.com.
+# aws s3 cp file.txt s3://my-bucket/ --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers full=emailaddress=user@example.com
+
+Remove All Files In A Bucket
+# aws s3 rm --recursive s3://my-bucket
+
+One cannot use the * character as a wildcard. S3 considers this a valid character for a filename. Hence the use of the --recursive flag.
+
+Copy A Bucket
+# aws s3 cp --recursive s3://my-bucket s3://my-second-bucket
+
+One can use this to copy files between two different accounts, as long as one of the account's buckets is publicly accessable!
+The files go direct from server to server (e.g. not through you) so this is super fast!
+Move A Bucket's Contents Same as before but with "mv" instead of "cp"
+
+Upload To Bucket
+
+# aws s3 cp /path/to/local/file.txt s3://my-bucket/sub-folder/file.txt
+
+Download File From Bucket
+# aws s3 cp s3://my-bucket/sub-folder/file.txt /path/to/local/file.txt
+
+####################################################################
+
+VPC Describing
+
+Creating A VPC
+# aws ec2 create-vpc --cidr-block <cidr_block> --regiosn <region>
+e.g
+# aws ec2 create-vpc --cidr-block 10.0.0.0/16 --region eu-west-1
+
+Allowing DNS hostnames
+# aws ec2 modify-vpc-attribute --vpc-id <vpc_id> --enable-dns-hostnames "{\"Value\":true}" --region <region>
+
+
+Subnets
+Creating A Subnet
+# aws ec2 create-subnet --vpc-id <vpc_id> --cidr-block <cidr_block> --availability-zone <availability_zone> --region <region>
+Auto Assigning Public IPs To Instances In A Public Subnet
+# aws ec2 modify-subnet-attribute --subnet-id <subnet_id> --map-public-ip-on-launch --region <region>
+
+Internet Gateway
+
+Creating An IGW
+# aws ec2 create-internet-gateway --region <region>
+Attaching An IGW to A VPC
+# aws ec2 attach-internet-gateway --internet-gateway-id <igw_id> --vpc-id <vpc_id> --region <region>
+
+
+NAT
+Setting Up A NAT Gateway
+Allocate Elastic IP
+# aws ec2 allocate-address --domain vpc --region <region> 
+then use the AllocationId to create the NAT Gateway for the public zone in
+# aws ec2 create-nat-gateway --subnet-id <subnet_id> --allocation-id <allocation_id> --region <region> 
+
+Route Tables
+Creating A Public Route Table
+Create the Route Table:
+# aws ec2 create-route-table --vpc-id <vpc_id> --region <region> 
+
+then create a route for an Internet Gateway.
+Now, use the outputted Route Table ID:
+# aws ec2 create-route --route-table-id <route_table_id> --destination-cidr-block 0.0.0.0/0 --gateway-id <igw_id> --region <region> 
+
+Finally, associate the public subnet with the Route Table
+# aws ec2 associate-route-table --route-table-id <route_table_id> --subnet-id <subnet_id> --region <region>
+
+Creating A Private Route Tables
+Create the Route Table
+# aws ec2 create-route-table --vpc-id <vpc_id> --region <region> 
+
+then create a route that points to a NAT Gateway
+# aws ec2 create-route --route-table-id <route_table_id> --destination-cidr-block 0.0.0.0/0 --nat-gateway-id <net_gateway_id> --region <region> 
+
+Finally, associate the subnet
+# aws ec2 associate-route-table --route-table-id <route_table_id> --subnet-id <subnet_id> --region <region> 
+
+# aws ec2 describe-vpcs
+
+# aws ec2 describe-subnets --filters Name=vpc-id,Values=<vpc-id>
+
+# aws ec2 describe-route-tables --filters Name=vpc-id,Values=<vpc-id>
+
+# aws ec2 describe-network-acls --filters Name=vpc-id,Values=<vpc-id>
+
+# aws ec2 describe-vpc-peering-connections
+
+Describe all instances in a region, or in a specific VPC
+aws ec2 describe-instances \
+ --query 'Reservations[*].Instances[*].{Id:InstanceId,Pub:PublicIpAddress,Pri:PrivateIpAddress,State:State.Name}' \
+ --output table
+
+aws ec2 describe-instances \
+ --filters Name=vpc-id,Values=<vpc-id> \
+ --query 'Reservations[*].Instances[*].{Id:InstanceId,Pub:PublicIpAddress,Pri:PrivateIpAddress,State:State.Name}' \
+ --output table
+
+
+
+#####################################################################################
+IAM
+
+List Users
+# aws iam list-users
+List Policies
+# aws  iam list-policies
+List Groups
+# aws iam list-groups
+Get Users In A Group
+# aws iam get-group --group-name <group_name>
+Describing A Policy
+# aws iam get-policy --policy-arn arn:aws:iam::aws:policy/<policy_name>
+List Access Keys
+# aws iam list-access-keys
+List Keys
+# aws iam list-access-keys
+List The Access Key IDs For An IAM User
+# aws iam list-access-keys --user-name <user_name>
+List The SSH Public Keys For A User
+# aws iam list-ssh-public-keys --user-name <user_name>
+
+
+######################################################################### 
+ ELB Describing
+
+# aws elb describe-load-balancers --load-balancer-names <lb-name>
+
+# aws elb describe-load-balancer-attributes --load-balancer-name <lb-name>
+
+# aws elb describe-load-balancer-policies \
+ --policy-names [ <policy-name> | ELBSecurityPolicy-2014-10 ]
+Registering and removing instances
+
+# aws elb register-instances-with-load-balancer
+ --load-balancer-name <lb-name>
+ --instances <instance-id>
+
+# aws elb deregister-instances-from-load-balancer
+ --load-balancer-name <lb-name>
+ --instances <instance-id>
+Viewing the health of your ELB instances
+
+# aws elb describe-instance-health --load-balancer-name <lb-name>
+
+

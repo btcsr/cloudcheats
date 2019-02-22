@@ -1,0 +1,81 @@
+1.1 CHECK FILE
+
+Name						Comment
+Show file content				cat /etc/hosts
+Show file content with line numbers		cat -n /etc/hosts
+Show with line numbers, excluding blank lines	cat -b /etc/hosts
+Show the first 3 lines				head -n3 /etc/hosts
+Show the first 20 bytes				head -c20 /etc/hosts
+Show the last 3 lines				tail -n3 /etc/hosts
+Show the last 20 bytes				tail -c20 /etc/hosts
+Keep tailing log file				tail -f /var/log/system.log, taif /var/log/system.log
+Show file starting from 4th line		more +4 /etc/hosts
+Show the 4th line				sed -n '4p' /etc/hosts
+Show 4th, 5th, 7th and 8th lines		sed -n '4,5p;7,8p' /etc/hosts
+Show matched string with 3 lines before and after grep -C 3 "127.0.0.1" /etc/hosts
+For table-like file, show 2nd column		awk -F'\t' '{print $2}' /etc/hosts
+For table-like file, swap 1st and 2nd columns	awk -F'\t' '{print $2,$1}' /etc/hosts
+Find file encoding				file -i /var/log/corecaptured.log
+
+1.2 FIND FILE
+
+Name					Summary
+Basic find				find /home/mac/<myfolder> -name “my*.log”
+Find files with two patterns		find . -iname “my*.log” -o -iname “my*.txt”
+Find folder old than 3 days		find . -maxdepth 1 -type d -ctime +3
+Find files changed within 60 minutes	find /var/log -mmin 60 -type f
+Find with ls details			find . \( -iname README.md \) -ls
+Find files filtered by size		find /var/log -type f -size +50k -size -100k
+Find files older than another file	find . -newer /tmp/file
+Find files while excluding patterns	find . -name "*.log" -prune -o -name ".git" -prune -o -type f -print0
+
+1.3 FIND AND DELETE
+
+Name						Summary
+Find and delete with given names		find . -name Thumbs.db -delete
+Recursively delete empty folders		find . -type d -empty -delete
+Delete files haven’t been updated in 5 days	find . -mtime +5 -exec rm {} \;
+Delete folders created older than 5 days	find . -name "npm-*" -type d -ctime +2 -exec rm -rf {} +
+
+1.4 WATCH FILE
+
+Name			Comment
+Show file changes	watch -d -n 1 stat /var/log/message
+Keep tailing log files	tail -f /var/log/system.log, taif /var/log/system.log
+
+1.5 COPY FILE
+
+Name							Comment
+Copy one file						cp /etc/hosts /tmp/hosts
+Copy one folder						cp -r /usr/local/bin/ /tmp/bin/
+Copy for backup						cp /tmp/hosts{,.bak}, ls -lth /tmp/hosts*
+Create a copy but ask confirmation for overwrite	cp -i ~/foo.txt /tmp/foo.txt
+Create a copy for backup with timstamp as suffix	cp myfile.txt{,."$(date +%Y%m%d-%H%M%S)"}
+Copy files by checking timestamp			rsync -av $src_dir $dest_dir
+Copy files by comparing checksum			rsync -avc $src_dir $dest_dir
+
+
+1.6 WATCH FILE
+
+Name					Command
+Remove a file or folder			rm -rf <path>
+Remove a file or an empty folder	rm -f <path>
+Remove a file by inode			find <path> -inum 5555 -exec rm -i '{}' \;
+
+1.7 DIFF FILE
+
+Name				Command
+Diff two files			diff <file1> <file2>
+Ignore uppercase and lowercase	diff -i <file1> <file2>
+Diff output of two commands	diff <(date) <(somecommand)
+Generate patch from two files	diff -Naur <file1> <file2> > diff.patch
+Diff two directories		diff -r <dir1> <dir2>
+Show only brief summary		diff -r --brief <dir1> <dir2>
+
+1.8 MAKE DIRECTORY
+
+Name							Comment
+Make directory. Report error, if existing		mkdir foo
+Make directory. Avoid reporting error, if existing	mkdir -p foo
+Make directory and its parents				mkdir -p foo/bar/dir1
+Make directories with the hierachy			mkdir -p foo/{bar,bad/{dir1,dir2}}, tree foo
